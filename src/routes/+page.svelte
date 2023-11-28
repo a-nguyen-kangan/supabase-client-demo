@@ -1,5 +1,6 @@
 <script lang="ts">
     // import { createClient } from '@supabase/supabase-js';
+    import { PUBLIC_TEST_VALUE } from '$env/static/public';
     import supabaseClient from '$lib/supabaseClient';
     import { onMount } from 'svelte';
 
@@ -90,6 +91,7 @@
 
 </script>
 <h1>Supabase client demo</h1>
+<h2>{ PUBLIC_TEST_VALUE }</h2>
 
 <button on:click={getUsers}>Get Users</button><br>
 <button on:click={getSession}>Get Session</button><br>
