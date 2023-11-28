@@ -11,15 +11,16 @@
     let users = [];
     let err = null;
 
+    let session = null;
+
     onMount(async () => {
+        getSession();
+    });
+
+    async function getUsers() {
         const { data, error } = await supabaseClient
-            .from('Users')
-            .select(`
-                *,
-                Products!inner (
-                    *
-                )
-            `)
+            .from('Users_Protected')
+            .select('*')
         
         if (error) {
             err = error.message;
@@ -29,10 +30,80 @@
 
         console.log(data);
         users = data;
-    });
+    }
+
+    async function getSession() {
+        const { data, error } = await supabaseClient.auth.getSession();
+
+        if (error) {
+            err = error.message;
+            console.log("error: ", error);
+            return;
+        }
+
+        session = data;
+        console.log(data);
+    }
+
+    async function login() {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: 'me@person.com',
+            password: 'abcd1234',
+        });
+
+        if (error) {
+            err = error.message;
+            console.log("error: ", error);
+            return;
+        }
+
+        session = data.session;
+        console.log(data);
+    }
+
+    async function logout() {
+        const { error } = await supabaseClient.auth.signOut();
+
+        if (error) {
+            err = error.message;
+            console.log("error: ", error);
+            return;
+        }
+
+        session = null;
+    }
+
+    async function loginGithub() {
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'github'
+        })
+
+        if (error) {
+            err = error.message;
+            console.log("error: ", error);
+            return;
+        }
+
+        session = data.session;
+        console.log(data);
+    }
 
 </script>
 <h1>Supabase client demo</h1>
+
+<button on:click={getUsers}>Get Users</button><br>
+<button on:click={getSession}>Get Session</button><br>
+<button on:click={login}>Log in</button>
+<button on:click={loginGithub}>GitHub login</button>
+<button on:click={logout}>Log out</button>
+<br>
+<hr>
+Session: {#if session}
+        {session.session.access_token}<br>
+    {:else}
+        No session<br>
+    {/if}
+
 
 {#if users.length > 0}
     {#each users as user}
